@@ -6,64 +6,103 @@
 #include <glbinding/gl45core/gl.h>
 #include <print>
 
-enum VAO_IDs { Triangles, NumVAOs, };
-enum Buffer_IDs { ArrayBuffer, NumBuffers, };
-enum Attrib_IDs { vPosition = 0, };
+using namespace std;
 
-gl::GLuint VAOs[NumVAOs];
-gl::GLuint Buffers[NumBuffers];
+constexpr gl::GLfloat vertices[]{
+	.5f,
+	.5f,
+	.5f,
+	-.5f,
+	-.5f,
+	-.5f,
+	-.5f,
+	.5f,
+};
+constexpr gl::GLuint indices[]{
+	0,
+	1,
+	3,
+	1,
+	2,
+	3,
+};
+struct window_size {
+	gl::GLuint x = 800;
+	gl::GLuint y = 600;
+};
 
-constexpr gl::GLuint NumVertices = 6;
+template <gl::GLuint VBsize = 1>
+struct gl_state {
+	gl::GLuint shader_prog;
+	gl::GLuint vao[VBsize];
+	gl::GLuint vbo[VBsize];
+	gl::GLuint ebo[VBsize];
 
-auto init()
-{
-	gl::glGenVertexArrays(NumVAOs, VAOs);
-	gl::glBindVertexArray(VAOs[Triangles]);
 
-	constexpr gl::GLfloat vertices[NumVertices][2] = {
-		{ -0.90f, -0.90f }, {  0.85f, -0.90f }, { -0.90f,  0.85f },  // Triangle 1
-		{  0.90f, -0.85f }, {  0.90f,  0.90f }, { -0.85f,  0.90f },  // Triangle 2
-	};
+	gl_state() {
+		using namespace gl;
+		ShaderInfo shaders[]{
+			{ gl::GL_VERTEX_SHADER, "triangle.vert" },
+			{ gl::GL_FRAGMENT_SHADER, "triangle.frag" },
+			{ gl::GL_NONE, nullptr },
+		};
+		shader_prog = LoadShaders(shaders);
 
-	gl::glCreateBuffers(NumBuffers, Buffers);
-	gl::glBindBuffer(gl::GL_ARRAY_BUFFER, Buffers[ArrayBuffer]);
-	gl::glBufferStorage(gl::GL_ARRAY_BUFFER, sizeof(vertices), vertices, gl::BufferStorageMask{ 0 });
+		glGenVertexArrays(VBsize, vao);
+		glGenBuffers(VBsize, vbo);
+		// bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
+		glBindVertexArray(vao[0]);
 
-	ShaderInfo shaders[] =
-	{
-		{ gl::GL_VERTEX_SHADER, "triangle.vert" },
-		{ gl::GL_FRAGMENT_SHADER, "triangle.frag" },
-		{ gl::GL_NONE , NULL}
-	};
+		glBindBuffer(gl::GL_ARRAY_BUFFER, vbo[0]);
+		glBufferData(gl::GL_ARRAY_BUFFER, sizeof(vertices), vertices, gl::GL_STATIC_DRAW);
 
-	gl::GLuint program = LoadShaders(shaders);
-	gl::glUseProgram(program);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(0);
 
-	gl::glVertexAttribPointer(vPosition, 2, gl::GL_FLOAT , gl::GL_FALSE, 0, BUFFER_OFFSET(0));
-	gl::glEnableVertexAttribArray(vPosition);
-}
+		// note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
 
-auto display()
-{
-	constexpr gl::GLfloat black[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	gl::glClearBufferfv(gl::GL_COLOR, 0, black);
-	gl::glBindVertexArray(VAOs[Triangles]);
-	gl::glDrawArrays(gl::GL_TRIANGLES, 0, NumVertices);
-}
+
+	~gl_state() {
+		using namespace gl;
+		glDeleteVertexArrays(VBsize, vao);
+		glDeleteBuffers(VBsize, vbo);
+		glDeleteProgram(shader_prog);
+	}
+
+
+	auto display() {
+		using namespace gl;
+		gl::glClearColor(0, .2, .1, 1);
+		gl::glClear(gl::GL_COLOR_BUFFER_BIT);
+
+		glUseProgram(shader_prog);
+		glBindVertexArray(vao[0]); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+	}
+};
+
 
 #include <GLFW/glfw3.h>
-int main()
-{
+int main() {
 	glfwInit();
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
 	auto* window = glfwCreateWindow(800, 600, "Triangles", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
-	glbinding::initialize(glfwGetProcAddress);
 
-	init();
+	glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
+		gl::glViewport(0, 0, width, height);
+	});
+
+	glbinding::initialize(glfwGetProcAddress);
+	gl_state state;
 	std::println("Ran Init");
-	while (!glfwWindowShouldClose(window))
-	{
-		display();
+	while (!glfwWindowShouldClose(window)) {
+		state.display();
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
