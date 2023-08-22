@@ -7,7 +7,7 @@
 #ifndef __LOAD_SHADERS_H__
 #define __LOAD_SHADERS_H__
 
-#include "GL/gl3w.h"
+#include <glbinding/gl45core/types.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,12 +28,12 @@ extern "C" {
 //
 
 typedef struct {
-    GLenum       type;
+    gl::GLenum       type;
     const char*  filename;
-    GLuint       shader;
+    gl::GLuint       shader;
 } ShaderInfo;
 
-GLuint LoadShaders(ShaderInfo*);
+gl::GLuint LoadShaders(ShaderInfo*);
 
 //----------------------------------------------------------------------------
 

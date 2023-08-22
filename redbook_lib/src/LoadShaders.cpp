@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include "LoadShaders.h"
+#include <glbinding/gl45core/gl.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,9 +16,10 @@ extern "C" {
 
     //----------------------------------------------------------------------------
 
-    static const GLchar*
+    static const gl::GLchar*
         ReadShader(const char* filename)
     {
+
 #ifdef WIN32
         FILE* infile;
         fopen_s(&infile, filename, "rb");
@@ -36,55 +38,57 @@ extern "C" {
         int len = ftell(infile);
         fseek(infile, 0, SEEK_SET);
 
-        GLchar* source = new GLchar[len + 1];
+        gl::GLchar* source = new gl::GLchar[len + 1];
 
-        fread(source, 1, len, infile);
+        fread(source, sizeof(gl::GLchar), len, infile);
+
+
         fclose(infile);
 
         source[len] = 0;
 
-        return const_cast<const GLchar*>(source);
+        return const_cast<const gl::GLchar*>(source);
     }
 
     //----------------------------------------------------------------------------
 
-    GLuint
+    gl::GLuint
         LoadShaders(ShaderInfo* shaders)
     {
         if (shaders == NULL) { return 0; }
 
-        GLuint program = glCreateProgram();
+        gl::GLuint program = gl::glCreateProgram();
 
         ShaderInfo* entry = shaders;
-        while (entry->type != GL_NONE) {
-            GLuint shader = glCreateShader(entry->type);
+        while (entry->type != gl::GL_NONE) {
+            gl::GLuint shader = glCreateShader(entry->type);
 
             entry->shader = shader;
 
-            const GLchar* source = ReadShader(entry->filename);
+            const gl::GLchar* source = ReadShader(entry->filename);
             if (source == NULL) {
-                for (entry = shaders; entry->type != GL_NONE; ++entry) {
-                    glDeleteShader(entry->shader);
+                for (entry = shaders; entry->type != gl::GL_NONE; ++entry) {
+                    gl::glDeleteShader(entry->shader);
                     entry->shader = 0;
                 }
 
                 return 0;
             }
 
-            glShaderSource(shader, 1, &source, NULL);
+            gl::glShaderSource(shader, 1, &source, NULL);
             delete[] source;
 
-            glCompileShader(shader);
+            gl::glCompileShader(shader);
 
-            GLint compiled;
-            glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+            gl::GLint compiled;
+            gl::glGetShaderiv(shader, gl::GL_COMPILE_STATUS, &compiled);
             if (!compiled) {
 #ifdef _DEBUG
-                GLsizei len;
-                glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &len);
+                gl::GLsizei len;
+                gl::glGetShaderiv(shader, gl::GL_INFO_LOG_LENGTH, &len);
 
-                GLchar* log = new GLchar[len + 1];
-                glGetShaderInfoLog(shader, len, &len, log);
+                gl::GLchar* log = new gl::GLchar[len + 1];
+                gl::glGetShaderInfoLog(shader, len, &len, log);
                 std::cerr << "Shader compilation failed: " << log << std::endl;
                 delete[] log;
 #endif /* DEBUG */
@@ -92,28 +96,28 @@ extern "C" {
                 return 0;
             }
 
-            glAttachShader(program, shader);
+            gl::glAttachShader(program, shader);
 
             ++entry;
         }
 
-        glLinkProgram(program);
+        gl::glLinkProgram(program);
 
-        GLint linked;
-        glGetProgramiv(program, GL_LINK_STATUS, &linked);
+        gl::GLint linked;
+        gl::glGetProgramiv(program, gl::GL_LINK_STATUS, &linked);
         if (!linked) {
 #ifdef _DEBUG
-            GLsizei len;
-            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len);
+            gl::GLsizei len;
+            gl::glGetProgramiv(program, gl::GL_INFO_LOG_LENGTH, &len);
 
-            GLchar* log = new GLchar[len + 1];
-            glGetProgramInfoLog(program, len, &len, log);
+            gl::GLchar* log = new gl::GLchar[len + 1];
+            gl::glGetProgramInfoLog(program, len, &len, log);
             std::cerr << "Shader linking failed: " << log << std::endl;
             delete[] log;
 #endif /* DEBUG */
 
-            for (entry = shaders; entry->type != GL_NONE; ++entry) {
-                glDeleteShader(entry->shader);
+            for (entry = shaders; entry->type != gl::GL_NONE; ++entry) {
+                gl::glDeleteShader(entry->shader);
                 entry->shader = 0;
             }
 

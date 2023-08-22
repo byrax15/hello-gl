@@ -13,10 +13,9 @@ project ("hello-gl")
 
 # libs
 include(FetchContent)
-find_package(gl3w CONFIG REQUIRED)
+#find_package(gl3w CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glbinding CONFIG REQUIRED)
-#find_package(glbinding)
 #find_package(raylib CONFIG REQUIRED)
 #FetchContent_Declare(
 #	raylib_cpp
@@ -31,8 +30,10 @@ set_property(GLOBAL PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 # Add source to this project's executable.
 add_executable (hello-gl "hello-gl.cpp")
-target_link_libraries(hello-gl PRIVATE redbook_lib unofficial::gl3w::gl3w glfw glbinding::glbinding)
-
+target_link_libraries(hello-gl PRIVATE redbook_lib glbinding::glbinding glfw)
+if(MSVC)
+	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT hello-gl)
+endif()
 
 # copy shaders
 add_custom_command(

@@ -7,6 +7,8 @@
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
+      "enableClangTidyCodeAnalysis": true,
+      "clangTidyChecks": "clang-analyzer-*",
       "variables": [
         {
           "name": "VCPKG_MANIFEST_MODE",
@@ -28,6 +30,12 @@
       "generator": "Visual Studio 17 2022 Win64",
       "configurationType": "Release",
       "inheritEnvironments": [ "project_base", "msvc_x64_x64" ]
+    },
+    {
+      "name": "x64-Clang-Release",
+      "generator": "Visual Studio 17 2022 Win64",
+      "configurationType": "Release",
+      "inheritEnvironments": [ "project_base", "clang_cl_x64_x64" ]
     }
   ]
 }
