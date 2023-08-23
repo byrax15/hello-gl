@@ -69,9 +69,6 @@ struct gl_state {
 
 		// note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
 		gl::glBindBuffer(GL_ARRAY_BUFFER, 0);
-#ifndef NDEBUG
-		gl::glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-#endif
 	}
 
 
@@ -96,6 +93,26 @@ struct gl_state {
 	}
 };
 
+namespace gl_callbacks {
+	constexpr auto framebuffer_resize = [](auto*, int width, int height) {
+		gl::glViewport(0, 0, width, height);
+	};
+
+	constexpr auto swap_polygon_mode = [](auto*, gl::GLuint input) {
+		gl::GLenum mode = gl::GL_LINE;
+		switch (input) {
+		case 'd':
+			mode = gl::GL_LINE;
+			break;
+		case 'f':
+			mode = gl::GL_FILL;
+			break;
+		default:
+			return;
+		}
+		gl::glPolygonMode(gl::GL_FRONT_AND_BACK, mode);
+	};
+}
 
 #include <GLFW/glfw3.h>
 int main() {
@@ -107,8 +124,12 @@ int main() {
 	auto* window = glfwCreateWindow(800, 600, "Triangles", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 
-	glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
-		gl::glViewport(0, 0, width, height);
+	glfwSetFramebufferSizeCallback(window, gl_callbacks::framebuffer_resize);
+	glfwSetCharCallback(window, gl_callbacks::swap_polygon_mode);
+	glfwSetKeyCallback(window, [](auto* window, int keycode, int, int, int) {
+		if (keycode == GLFW_KEY_ESCAPE) {
+			glfwSetWindowShouldClose(window, true);
+		}
 	});
 
 	glbinding::initialize(glfwGetProcAddress);
