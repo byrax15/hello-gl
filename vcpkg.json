@@ -1,6 +1,5 @@
 {
   "dependencies": [
-    "gl3w",
     "glfw3",
     "glbinding"
   ]
