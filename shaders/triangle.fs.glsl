@@ -2,7 +2,9 @@
 
 layout (location = 0) out vec4 fColor;
 
+uniform vec4 triangleColor;
+
 void main()
 {
-	fColor = vec4(1,.5,.5,1);
+	fColor = triangleColor;
 }
