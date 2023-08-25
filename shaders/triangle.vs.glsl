@@ -1,8 +1,11 @@
 #version 450 core
 
-layout (location = 0) in vec3 vPosition;
+in vec3 vPosition;
+out vec4 fragPosition;
 
 void main()
 {
-	gl_Position = vec4(vPosition.x, vPosition.y, vPosition.z, 1);
+	vec4 pos = vec4(vPosition.x, vPosition.y, vPosition.z, 1);
+	gl_Position = pos;
+	fragPosition = pos;
 }

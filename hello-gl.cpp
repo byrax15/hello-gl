@@ -74,9 +74,9 @@ int main() {
 		GLstate::clear_screen();
 		triangle.use();
 
-		const auto time = glfwGetTime();
-		triangle.setFloat("time", std::cosf(time) + 1);
-		triangle.setVec4("color", span{ red });
+		//const auto time = glfwGetTime();
+		//triangle.setFloat("time", std::cosf(time) + 1);
+		//triangle.setVec4("color", span{ red });
 
 		state.draw();
 

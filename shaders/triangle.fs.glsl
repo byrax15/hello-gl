@@ -1,11 +1,9 @@
 #version 450 core
 
+in vec4 fragPosition;
 out vec4 fColor;
-
-uniform vec4 color;
-uniform float time;
 
 void main()
 {
-	fColor = color * time;
+	fColor = fragPosition;
 }
