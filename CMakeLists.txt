@@ -13,7 +13,6 @@ project ("hello-gl")
 
 # libs
 include(FetchContent)
-#find_package(gl3w CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glbinding CONFIG REQUIRED)
 #find_package(raylib CONFIG REQUIRED)
@@ -22,19 +21,16 @@ find_package(glbinding CONFIG REQUIRED)
 #	GIT_REPOSITORY https://github.com/RobLoach/raylib-cpp.git
 #)
 #FetchContent_MakeAvailable(raylib_cpp)
-add_subdirectory(redbook_lib)
-add_subdirectory(gl_abstractions)
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set_property(GLOBAL PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 # Add source to this project's executable.
 add_executable (hello-gl)
-target_sources(hello-gl PRIVATE "hello-gl.cpp")
+target_sources(hello-gl PRIVATE "hello-gl.cpp" "Shader.h" "GLstate.h")
 
-target_link_libraries(hello-gl PRIVATE gl_abstractions redbook_lib glbinding::glbinding glfw)
-target_include_directories(hello-gl PRIVATE "gl_abstractions/include" "redbook_lib/include")
+target_link_libraries(hello-gl PRIVATE glbinding::glbinding glfw)
 
 if(MSVC)
 	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT hello-gl)

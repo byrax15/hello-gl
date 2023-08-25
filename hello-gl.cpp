@@ -1,24 +1,25 @@
 ﻿// hello-gl.cpp : Defines the entry point for the application.
 //
-#include <gl_abstractions.h>
 #include <glbinding/glbinding.h>
 #include <glbinding/gl45core/gl.h>
-#include <print>
 #include <span>
+#include <array>
+#include <bit>
+#include <numbers>
+#include "Shader.h"
+#include "GLstate.h"
 
 
 using namespace std;
-using namespace gl_abstractions;
 
 
-constexpr vec3 vertices[]{
-	{ .5f, .5f, 0 },
-	{ .5f, -.5f, 0 },
-	{ -.5f, -.5f, 0 },
-	{ -.5f, .5f, 0 }
+static constexpr std::array vertices{
+	vertex{ -.5, -.5, 0 },
+	vertex{ .5, -.5, 0 },
+	vertex{ 0, .5, 0 },
 };
-constexpr triangle tri1[]{ { 0, 1, 3 } };
-constexpr triangle tri2[]{ { 1, 2, 3 } };
+static constexpr std::array<gl::GLfloat, 4> red{ 1, 0, 0, 1 };
+
 
 namespace gl_callbacks {
 
@@ -42,8 +43,11 @@ namespace gl_callbacks {
 	};
 }
 
+
 #include <GLFW/glfw3.h>
+#include <cassert>
 int main() {
+
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
@@ -61,16 +65,21 @@ int main() {
 	});
 
 	glbinding::initialize(glfwGetProcAddress);
-	gl_job jobs[]{
-		{ "triangle.vert", "triangle_mauve.frag", span{ tri1 }, span{ vertices } },
-		{ "triangle.vert", "triangle_orange.frag", span{ tri2 }, span{ vertices } },
-	};
 
-	std::println("Ran Init");
+
+	Shader	triangle{ "triangle.vs.glsl", "triangle.fs.glsl" };
+	GLstate state{ triangle, span{ vertices } };
+
 	while (!glfwWindowShouldClose(window)) {
-		gl_job::clear();
-		for (auto& j : jobs)
-			j.display();
+		GLstate::clear_screen();
+		triangle.use();
+
+		const auto time = glfwGetTime();
+		triangle.setFloat("time", std::cosf(time) + 1);
+		triangle.setVec4("color", span{ red });
+
+		state.draw();
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}

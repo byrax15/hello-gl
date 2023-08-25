@@ -31,7 +31,7 @@ FixNamespaceComments: false
 IndentCaseLabels: false
 IndentPPDirectives: None
 IndentWidth: 4
-MaxEmptyLinesToKeep: 10
+MaxEmptyLinesToKeep: 2
 NamespaceIndentation: All
 PointerAlignment: Left
 SortIncludes: false
@@ -45,3 +45,9 @@ SpacesInParentheses: false
 SpacesInSquareBrackets: false
 TabWidth: 4
 UseTab: true
+
+# long function parameter declaration wrapping
+BinPackArguments : false
+BinPackParameters: false
+AlignConsecutiveAssignments : true
+AlignConsecutiveDeclarations: true

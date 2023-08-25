@@ -1,10 +1,11 @@
 #version 450 core
 
-layout (location = 0) out vec4 fColor;
+out vec4 fColor;
 
-uniform vec4 triangleColor;
+uniform vec4 color;
+uniform float time;
 
 void main()
 {
-	fColor = triangleColor;
+	fColor = color * time;
 }
