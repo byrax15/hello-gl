@@ -15,6 +15,7 @@ project ("hello-gl")
 include(FetchContent)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glbinding CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
 #find_package(raylib CONFIG REQUIRED)
 #FetchContent_Declare(
 #	raylib_cpp
@@ -30,7 +31,7 @@ set_property(GLOBAL PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 add_executable (hello-gl)
 target_sources(hello-gl PRIVATE "hello-gl.cpp" "Shader.h" "GLstate.h")
 
-target_link_libraries(hello-gl PRIVATE glbinding::glbinding glfw)
+target_link_libraries(hello-gl PRIVATE glbinding::glbinding glfw glm::glm)
 
 if(MSVC)
 	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT hello-gl)
