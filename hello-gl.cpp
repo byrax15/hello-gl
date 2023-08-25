@@ -2,10 +2,9 @@
 //
 #include <glbinding/glbinding.h>
 #include <glbinding/gl45core/gl.h>
+#include <glm/glm.hpp>
 #include <span>
 #include <array>
-#include <bit>
-#include <numbers>
 #include "Shader.h"
 #include "GLstate.h"
 
@@ -14,11 +13,17 @@ using namespace std;
 
 
 static constexpr std::array vertices{
-	vertex{ -.5, -.5, 0 },
-	vertex{ .5, -.5, 0 },
-	vertex{ 0, .5, 0 },
+	glm::vec3{ -.5, -.5, 0 },
+	glm::vec3{ .5, -.5, 0 },
+	glm::vec3{ .5, .5, 0 },
+	glm::vec3{ -.5, .5, 0 },
 };
-static constexpr std::array<gl::GLfloat, 4> red{ 1, 0, 0, 1 };
+static constexpr std::array indices{
+	glm::uvec3{ 0, 1, 2 },
+	glm::uvec3{ 0, 2, 3 },
+};
+static constexpr glm::vec4 red{ 1, 0, 0, 1 };
+static constexpr glm::vec4 blue{ 0, 0, 1, 1 };
 
 
 namespace gl_callbacks {
@@ -68,16 +73,13 @@ int main() {
 
 
 	Shader	triangle{ "triangle.vs.glsl", "triangle.fs.glsl" };
-	GLstate state{ triangle, span{ vertices } };
+	GLstate<true> state{ triangle, span{ vertices }, span{ indices } };
 
-	while (!glfwWindowShouldClose(window)) {
-		GLstate::clear_screen();
+	while (!glfwWindowShouldClose(window)) {		
 		triangle.use();
-
-		//const auto time = glfwGetTime();
-		//triangle.setFloat("time", std::cosf(time) + 1);
-		//triangle.setVec4("color", span{ red });
-
+		triangle.setVec("baseColor", blue);
+		
+		GLstate<true>::clear_screen();
 		state.draw();
 
 		glfwSwapBuffers(window);

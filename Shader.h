@@ -1,11 +1,13 @@
 #pragma once
 
 #include <glbinding/gl45core/gl.h>
+#include <glm/vec4.hpp>
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <iostream>
 #include <span>
+
 
 class Shader {
 public:
@@ -89,9 +91,10 @@ public:
 		gl::glUniform1f(gl::glGetUniformLocation(ID, name.data()), value);
 	}
 
-	void setVec4(const std::string_view name, std::span<const gl::GLfloat, 4> vec) const {
+	template<typename glmVecType>
+	void setVec(const std::string_view name, const glmVecType& vec) const {
 		auto loc = gl::glGetUniformLocation(ID, name.data());
-		gl::glUniform4fv(loc, 1, vec.data());
+		gl::glUniform4fv(loc, 1, &vec[0]);
 	}
 
 private:
