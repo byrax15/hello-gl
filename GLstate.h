@@ -8,6 +8,7 @@ struct GLstate {
 	gl::GLuint vao;
 	gl::GLuint vbo;
 	gl::GLuint ebo;
+	gl::GLuint trianglesCount;
 	gl::GLuint indicesCount;
 	Shader	   shader;
 
@@ -16,6 +17,7 @@ struct GLstate {
 		std::span<const glm::vec3>	vertices,
 		std::span<const glm::uvec3> indices)
 		: shader(shader),
+		  trianglesCount(vertices.size() * glm::vec3::length()),
 		  indicesCount(indices.size() * glm::uvec3::length()) {
 
 		using namespace gl;
@@ -47,7 +49,7 @@ struct GLstate {
 			glDrawElements(GL_TRIANGLES, indicesCount, GL_UNSIGNED_INT, 0);
 		}
 		else {
-			glDrawArrays(GL_TRIANGLES, 0, 3);
+			glDrawArrays(GL_TRIANGLES, 0, trianglesCount);
 		}
 	}
 

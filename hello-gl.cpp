@@ -2,7 +2,11 @@
 //
 #include <glbinding/glbinding.h>
 #include <glbinding/gl45core/gl.h>
+
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <span>
 #include <array>
 #include "Shader.h"
@@ -16,7 +20,7 @@ static constexpr std::array vertices{
 	glm::vec3{ -.5, -.5, 0 },
 	glm::vec3{ .5, -.5, 0 },
 	glm::vec3{ .5, .5, 0 },
-	glm::vec3{ -.5, .5, 0 },
+	 glm::vec3{ -.5, .5, 0 },
 };
 static constexpr std::array indices{
 	glm::uvec3{ 0, 1, 2 },
@@ -25,11 +29,20 @@ static constexpr std::array indices{
 static constexpr glm::vec4 red{ 1, 0, 0, 1 };
 static constexpr glm::vec4 blue{ 0, 0, 1, 1 };
 
+const auto calcProjection = [](float width, float height) {
+	return glm::perspective(glm::radians(45.0f), width / height, 0.1f, 100.0f);
+};
+
+glm::mat4 model		 = glm::rotate(glm::mat4(1.f), glm::radians(-55.f), glm::vec3{ 1, 0, 0 });
+glm::mat4 view		 = glm::translate(glm::mat4(1.f), glm::vec3{ 0, 0, -3.f });
+glm::mat4 projection = calcProjection(800, 600);
+
 
 namespace gl_callbacks {
 
 	constexpr auto framebuffer_resize = [](auto*, int width, int height) {
 		gl::glViewport(0, 0, width, height);
+		calcProjection(800, 600);
 	};
 
 	constexpr auto swap_polygon_mode = [](auto*, gl::GLuint input) {
@@ -47,7 +60,6 @@ namespace gl_callbacks {
 		gl::glPolygonMode(gl::GL_FRONT_AND_BACK, mode);
 	};
 }
-
 
 #include <GLFW/glfw3.h>
 #include <cassert>
@@ -72,14 +84,19 @@ int main() {
 	glbinding::initialize(glfwGetProcAddress);
 
 
-	Shader	triangle{ "triangle.vs.glsl", "triangle.fs.glsl" };
-	GLstate<true> state{ triangle, span{ vertices }, span{ indices } };
+	Shader triangle{ "triangle.vs.glsl", "triangle.fs.glsl" };
+	using GLstate = GLstate<true>;
+	GLstate state{ triangle, span{ vertices }, span{ indices } };
 
-	while (!glfwWindowShouldClose(window)) {		
+	while (!glfwWindowShouldClose(window)) {
+
 		triangle.use();
-		triangle.setVec("baseColor", blue);
-		
-		GLstate<true>::clear_screen();
+		triangle.setVec4("baseColor", blue);
+		triangle.setMat4("model", model);
+		triangle.setMat4("view", view);
+		triangle.setMat4("projection", projection);
+
+		GLstate::clear_screen();
 		state.draw();
 
 		glfwSwapBuffers(window);

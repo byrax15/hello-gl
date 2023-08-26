@@ -2,11 +2,13 @@
 
 #include <glbinding/gl45core/gl.h>
 #include <glm/vec4.hpp>
+#include <glm/mat4x4.hpp>
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <iostream>
 #include <span>
+#include <glm/gtc/type_ptr.hpp>
 
 
 class Shader {
@@ -91,10 +93,14 @@ public:
 		gl::glUniform1f(gl::glGetUniformLocation(ID, name.data()), value);
 	}
 
-	template<typename glmVecType>
-	void setVec(const std::string_view name, const glmVecType& vec) const {
+	void setVec4(const std::string_view name, const glm::vec4& vec) const {
 		auto loc = gl::glGetUniformLocation(ID, name.data());
-		gl::glUniform4fv(loc, 1, &vec[0]);
+		gl::glUniform4fv(loc, 1, glm::value_ptr(vec));
+	}
+
+	void setMat4(const std::string_view name, const glm::mat4& vec) const {
+		auto loc = gl::glGetUniformLocation(ID, name.data());
+		gl::glUniformMatrix4fv(loc, 1, gl::GL_FALSE, glm::value_ptr(vec));
 	}
 
 private:
