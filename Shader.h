@@ -3,12 +3,12 @@
 #include <glbinding/gl45core/gl.h>
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include <span>
-#include <glm/gtc/type_ptr.hpp>
 
 
 class Shader {

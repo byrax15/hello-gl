@@ -1,4 +1,6 @@
 #pragma once
+
+#include <span>
 #include <glbinding/gl45core/gl.h>
 #include <glm/glm.hpp>
 #include "Shader.h"
@@ -16,9 +18,9 @@ struct GLstate {
 		Shader						shader,
 		std::span<const glm::vec3>	vertices,
 		std::span<const glm::uvec3> indices)
-		: shader(shader),
-		  trianglesCount(vertices.size() * glm::vec3::length()),
-		  indicesCount(indices.size() * glm::uvec3::length()) {
+		: trianglesCount(vertices.size()),
+		  indicesCount(indices.size() * glm::uvec3::length()),
+		  shader(shader) {
 
 		using namespace gl;
 		glGenVertexArrays(1, &vao);
@@ -53,15 +55,20 @@ struct GLstate {
 		}
 	}
 
-	static auto clear_screen() -> void {
-		gl::glClearColor(0, .2, .1, 1);
-		gl::glClear(gl::GL_COLOR_BUFFER_BIT);
-	}
-
 	~GLstate() {
 		using namespace gl;
 		glDeleteVertexArrays(1, &vao);
 		glDeleteBuffers(1, &vbo);
 		glDeleteBuffers(1, &ebo);
+	}
+
+	static auto clear_screen() -> void {
+		using namespace gl;
+		gl::glClearColor(0, .2, .1, 1);
+		glClear(gl::GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+
+	static auto init() {
+		gl::glEnable(gl::GL_DEPTH_TEST);
 	}
 };
