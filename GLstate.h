@@ -5,6 +5,10 @@
 #include <glm/glm.hpp>
 #include "Shader.h"
 
+
+
+
+
 template <bool IndexedRendering = false>
 struct GLstate {
 	gl::GLuint vao;

@@ -1,5 +1,9 @@
 ﻿// hello-gl.cpp : Defines the entry point for the application.
 //
+
+#include "Shader.h"
+#include "GLstate.h"
+
 #include <glbinding/glbinding.h>
 #include <glbinding/gl45core/gl.h>
 
@@ -9,12 +13,12 @@
 
 #include <span>
 #include <array>
-#include "Shader.h"
-#include "GLstate.h"
+#include <algorithm>
+
 
 using namespace std;
 
-constexpr  auto calcProjection = [](float width, float height) {
+constexpr auto calcProjection = [](float width, float height) {
 	return glm::perspective(glm::radians(45.0f), width / height, 0.1f, 100.0f);
 };
 
@@ -46,47 +50,55 @@ namespace gl_callbacks {
 	};
 }
 
-namespace geometry {
 
-	static constexpr std::array vertices{
-		glm::vec3{ -0.5f, -0.5f, -0.5f },
-		glm::vec3{ 0.5f, -0.5f, -0.5f },
-		glm::vec3{ 0.5f, 0.5f, -0.5f },
-		glm::vec3{ 0.5f, 0.5f, -0.5f },
-		glm::vec3{ -0.5f, 0.5f, -0.5f },
-		glm::vec3{ -0.5f, -0.5f, -0.5f },
-		glm::vec3{ -0.5f, -0.5f, 0.5f },
-		glm::vec3{ 0.5f, -0.5f, 0.5f },
-		glm::vec3{ 0.5f, 0.5f, 0.5f },
-		glm::vec3{ 0.5f, 0.5f, 0.5f },
-		glm::vec3{ -0.5f, 0.5f, 0.5f },
-		glm::vec3{ -0.5f, -0.5f, 0.5f },
-		glm::vec3{ -0.5f, 0.5f, 0.5f },
-		glm::vec3{ -0.5f, 0.5f, -0.5f },
-		glm::vec3{ -0.5f, -0.5f, -0.5f },
-		glm::vec3{ -0.5f, -0.5f, -0.5f },
-		glm::vec3{ -0.5f, -0.5f, 0.5f },
-		glm::vec3{ -0.5f, 0.5f, 0.5f },
-		glm::vec3{ 0.5f, 0.5f, 0.5f },
-		glm::vec3{ 0.5f, 0.5f, -0.5f },
-		glm::vec3{ 0.5f, -0.5f, -0.5f },
-		glm::vec3{ 0.5f, -0.5f, -0.5f },
-		glm::vec3{ 0.5f, -0.5f, 0.5f },
-		glm::vec3{ 0.5f, 0.5f, 0.5f },
-		glm::vec3{ -0.5f, -0.5f, -0.5f },
-		glm::vec3{ 0.5f, -0.5f, -0.5f },
-		glm::vec3{ 0.5f, -0.5f, 0.5f },
-		glm::vec3{ 0.5f, -0.5f, 0.5f },
-		glm::vec3{ -0.5f, -0.5f, 0.5f },
-		glm::vec3{ -0.5f, -0.5f, -0.5f },
-		glm::vec3{ -0.5f, 0.5f, -0.5f },
-		glm::vec3{ 0.5f, 0.5f, -0.5f },
-		glm::vec3{ 0.5f, 0.5f, 0.5f },
-		glm::vec3{ 0.5f, 0.5f, 0.5f },
-		glm::vec3{ -0.5f, 0.5f, 0.5f },
-		glm::vec3{ -0.5f, 0.5f, -0.5f },
+namespace geometry {
+	struct vertex_uv {
+		glm::vec3 vertex;
+		glm::vec2 uv;
+
+		operator glm::vec3() const { return vertex; }
+		operator glm::vec2() const { return uv; }
 	};
-	static constexpr std::array translations{
+
+	constexpr std::array vertices{
+		vertex_uv{ glm::vec3{ -0.5f, -0.5f, -0.5f }, glm::vec2{ 0.0f, 0.0f } },
+		vertex_uv{ glm::vec3{ 0.5f, -0.5f, -0.5f }, glm::vec2{ 1.0f, 0.0f } },
+		vertex_uv{ glm::vec3{ 0.5f, 0.5f, -0.5f }, glm::vec2{ 1.0f, 1.0f } },
+		vertex_uv{ glm::vec3{ 0.5f, 0.5f, -0.5f }, glm::vec2{ 1.0f, 1.0f } },
+		vertex_uv{ glm::vec3{ -0.5f, 0.5f, -0.5f }, glm::vec2{ 0.0f, 1.0f } },
+		vertex_uv{ glm::vec3{ -0.5f, -0.5f, -0.5f }, glm::vec2{ 0.0f, 0.0f } },
+		vertex_uv{ glm::vec3{ -0.5f, -0.5f, 0.5f }, glm::vec2{ 0.0f, 0.0f } },
+		vertex_uv{ glm::vec3{ 0.5f, -0.5f, 0.5f }, glm::vec2{ 1.0f, 0.0f } },
+		vertex_uv{ glm::vec3{ 0.5f, 0.5f, 0.5f }, glm::vec2{ 1.0f, 1.0f } },
+		vertex_uv{ glm::vec3{ 0.5f, 0.5f, 0.5f }, glm::vec2{ 1.0f, 1.0f } },
+		vertex_uv{ glm::vec3{ -0.5f, 0.5f, 0.5f }, glm::vec2{ 0.0f, 1.0f } },
+		vertex_uv{ glm::vec3{ -0.5f, -0.5f, 0.5f }, glm::vec2{ 0.0f, 0.0f } },
+		vertex_uv{ glm::vec3{ -0.5f, 0.5f, 0.5f }, glm::vec2{ 1.0f, 0.0f } },
+		vertex_uv{ glm::vec3{ -0.5f, 0.5f, -0.5f }, glm::vec2{ 1.0f, 1.0f } },
+		vertex_uv{ glm::vec3{ -0.5f, -0.5f, -0.5f }, glm::vec2{ 0.0f, 1.0f } },
+		vertex_uv{ glm::vec3{ -0.5f, -0.5f, -0.5f }, glm::vec2{ 0.0f, 1.0f } },
+		vertex_uv{ glm::vec3{ -0.5f, -0.5f, 0.5f }, glm::vec2{ 0.0f, 0.0f } },
+		vertex_uv{ glm::vec3{ -0.5f, 0.5f, 0.5f }, glm::vec2{ 1.0f, 0.0f } },
+		vertex_uv{ glm::vec3{ 0.5f, 0.5f, 0.5f }, glm::vec2{ 1.0f, 0.0f } },
+		vertex_uv{ glm::vec3{ 0.5f, 0.5f, -0.5f }, glm::vec2{ 1.0f, 1.0f } },
+		vertex_uv{ glm::vec3{ 0.5f, -0.5f, -0.5f }, glm::vec2{ 0.0f, 1.0f } },
+		vertex_uv{ glm::vec3{ 0.5f, -0.5f, -0.5f }, glm::vec2{ 0.0f, 1.0f } },
+		vertex_uv{ glm::vec3{ 0.5f, -0.5f, 0.5f }, glm::vec2{ 0.0f, 0.0f } },
+		vertex_uv{ glm::vec3{ 0.5f, 0.5f, 0.5f }, glm::vec2{ 1.0f, 0.0f } },
+		vertex_uv{ glm::vec3{ -0.5f, -0.5f, -0.5f }, glm::vec2{ 0.0f, 1.0f } },
+		vertex_uv{ glm::vec3{ 0.5f, -0.5f, -0.5f }, glm::vec2{ 1.0f, 1.0f } },
+		vertex_uv{ glm::vec3{ 0.5f, -0.5f, 0.5f }, glm::vec2{ 1.0f, 0.0f } },
+		vertex_uv{ glm::vec3{ 0.5f, -0.5f, 0.5f }, glm::vec2{ 1.0f, 0.0f } },
+		vertex_uv{ glm::vec3{ -0.5f, -0.5f, 0.5f }, glm::vec2{ 0.0f, 0.0f } },
+		vertex_uv{ glm::vec3{ -0.5f, -0.5f, -0.5f }, glm::vec2{ 0.0f, 1.0f } },
+		vertex_uv{ glm::vec3{ -0.5f, 0.5f, -0.5f }, glm::vec2{ 0.0f, 1.0f } },
+		vertex_uv{ glm::vec3{ 0.5f, 0.5f, -0.5f }, glm::vec2{ 1.0f, 1.0f } },
+		vertex_uv{ glm::vec3{ 0.5f, 0.5f, 0.5f }, glm::vec2{ 1.0f, 0.0f } },
+		vertex_uv{ glm::vec3{ 0.5f, 0.5f, 0.5f }, glm::vec2{ 1.0f, 0.0f } },
+		vertex_uv{ glm::vec3{ -0.5f, 0.5f, 0.5f }, glm::vec2{ 0.0f, 0.0f } },
+		vertex_uv{ glm::vec3{ -0.5f, 0.5f, -0.5f }, glm::vec2{ 0.0f, 1.0f } },
+	};
+	constexpr std::array translations{
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(2.0f, 5.0f, -15.0f),
 		glm::vec3(-1.5f, -2.2f, -2.5f),
@@ -105,6 +117,7 @@ namespace geometry {
 	};
 	static constexpr glm::vec4 red{ 1, 0, 0, 1 };
 	static constexpr glm::vec4 blue{ 0, 0, 1, 1 };
+
 }
 
 
@@ -133,7 +146,13 @@ int main() {
 	glbinding::initialize(glfwGetProcAddress);
 	Shader triangle{ "triangle.vs.glsl", "triangle.fs.glsl" };
 	GLstate::init();
-	GLstate state{ triangle, span{ geometry::vertices }, span{ geometry::indices } };
+	std::array<glm::vec3, geometry::vertices.size()> verticesOnly;
+	transform(
+		geometry::vertices.cbegin(),
+		geometry::vertices.cend(),
+		verticesOnly.begin(),
+		[](const geometry::vertex_uv vuv) { return vuv.vertex; });
+	GLstate state{ triangle, span{ verticesOnly }, span{ geometry::indices } };
 
 	while (!glfwWindowShouldClose(window)) {
 		GLstate::clear_screen();
