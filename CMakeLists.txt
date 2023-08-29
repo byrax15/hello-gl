@@ -16,6 +16,7 @@ include(FetchContent)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glbinding CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
+find_package(soil2 CONFIG REQUIRED)
 #find_package(raylib CONFIG REQUIRED)
 #FetchContent_Declare(
 #	raylib_cpp
@@ -37,14 +38,14 @@ endif()
 add_executable (hello-gl)
 target_sources(hello-gl PRIVATE "hello-gl.cpp" "Shader.h" "GLstate.h")
 
-target_link_libraries(hello-gl PRIVATE glbinding::glbinding glfw glm::glm)
+target_link_libraries(hello-gl PRIVATE glbinding::glbinding glfw glm::glm soil2)
 
 if(MSVC)
 	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT hello-gl)
 endif()
 
-# copy shaders
+# copy resources
 add_custom_command(
 	TARGET hello-gl	COMMAND ${CMAKE_COMMAND} -E copy_directory 
-	"${CMAKE_SOURCE_DIR}/shaders" "$<TARGET_FILE_DIR:hello-gl>"
+	"${CMAKE_SOURCE_DIR}/resources" "$<TARGET_FILE_DIR:hello-gl>"
 )

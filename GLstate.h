@@ -3,28 +3,29 @@
 #include <span>
 #include <glbinding/gl45core/gl.h>
 #include <glm/glm.hpp>
+
 #include "Shader.h"
 
 
+struct vertex_uv {
+	glm::vec3 vertex;
+	glm::vec2 uv;
+};
 
 
-
-template <bool IndexedRendering = false>
+template <bool IndexedRendering>
 struct GLstate {
 	gl::GLuint vao;
 	gl::GLuint vbo;
 	gl::GLuint ebo;
 	gl::GLuint trianglesCount;
 	gl::GLuint indicesCount;
-	Shader	   shader;
 
 	explicit GLstate(
-		Shader						shader,
-		std::span<const glm::vec3>	vertices,
+		std::span<const vertex_uv>	vertices,
 		std::span<const glm::uvec3> indices)
 		: trianglesCount(vertices.size()),
-		  indicesCount(indices.size() * glm::uvec3::length()),
-		  shader(shader) {
+		  indicesCount(indices.size() * glm::uvec3::length()) {
 
 		using namespace gl;
 		glGenVertexArrays(1, &vao);
@@ -41,8 +42,11 @@ struct GLstate {
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size_bytes(), indices.data(), GL_STATIC_DRAW);
 		}
 
-		glVertexAttribPointer(0, glm::vec3::length(), GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+		glVertexAttribPointer(0, glm::vec3::length(), GL_FLOAT, GL_FALSE, sizeof(vertex_uv), (void*)0);
 		glEnableVertexAttribArray(0);
+
+		glVertexAttribPointer(1, glm::vec2::length(), GL_FLOAT, GL_FALSE, sizeof(vertex_uv), (void*)sizeof(vertex_uv::vertex));
+		glEnableVertexAttribArray(1);
 
 		// note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
 		// glBindBuffer(GL_ARRAY_BUFFER, 0);

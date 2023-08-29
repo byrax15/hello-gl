@@ -5,6 +5,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -84,12 +85,18 @@ public:
 	void setBool(const std::string_view name, bool value) const {
 		gl::glUniform1i(gl::glGetUniformLocation(ID, name.data()), (int)value);
 	}
+
 	// ------------------------------------------------------------------------
-	void setInt(const std::string_view name, int value) const {
+	void setInt(const std::string_view name, gl::GLint value) const {
 		gl::glUniform1i(gl::glGetUniformLocation(ID, name.data()), value);
 	}
+
+	void setUint(const std::string_view name, gl::GLuint value) const {
+		gl::glUniform1ui(gl::glGetUniformLocation(ID, name.data()), value);
+	}
+
 	// ------------------------------------------------------------------------
-	void setFloat(const std::string_view name, float value) const {
+	void setFloat(const std::string_view name, gl::GLfloat value) const {
 		gl::glUniform1f(gl::glGetUniformLocation(ID, name.data()), value);
 	}
 
