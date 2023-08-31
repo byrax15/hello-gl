@@ -52,7 +52,7 @@ struct GLstate {
 		// glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
-	auto draw() -> void {
+	auto draw() const -> void {
 		using namespace gl;
 		glBindVertexArray(vao);
 		if constexpr (IndexedRendering) {

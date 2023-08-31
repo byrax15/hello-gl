@@ -29,29 +29,6 @@ namespace matrix {
 	glm::mat4 projection = calcProjection(800, 600);
 }
 
-namespace gl_callbacks {
-
-	constexpr auto framebuffer_resize = [](auto*, int width, int height) {
-		gl::glViewport(0, 0, width, height);
-		matrix::calcProjection(width, height);
-	};
-
-	constexpr auto swap_polygon_mode = [](auto*, gl::GLuint input) {
-		gl::GLenum mode = gl::GL_LINE;
-		switch (input) {
-		case 'd':
-			mode = gl::GL_LINE;
-			break;
-		case 'f':
-			mode = gl::GL_FILL;
-			break;
-		default:
-			return;
-		}
-		gl::glPolygonMode(gl::GL_FRONT_AND_BACK, mode);
-	};
-}
-
 namespace geometry {
 	using ::vertex_uv;
 
@@ -115,31 +92,43 @@ namespace geometry {
 
 }
 
+constexpr auto framebuffer_resize = [](auto*, int width, int height) {
+	gl::glViewport(0, 0, width, height);
+	matrix::calcProjection(width, height);
+};
+
+constexpr auto swap_polygon_mode = [](auto*, gl::GLuint input) {
+	gl::GLenum mode = gl::GL_LINE;
+	switch (input) {
+	case 'd':
+		mode = gl::GL_LINE;
+		break;
+	case 'f':
+		mode = gl::GL_FILL;
+		break;
+	default:
+		return;
+	}
+	gl::glPolygonMode(gl::GL_FRONT_AND_BACK, mode);
+};
 
 #include <GLFW/glfw3.h>
+constexpr auto exit_app = [](auto* window, int keycode, int, int, int) {
+	if (keycode == GLFW_KEY_ESCAPE) {
+		glfwSetWindowShouldClose(window, true);
+	}
+};
+
+#include "GLFWwrapper.h"
 int main() {
-
-	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwSwapInterval(1);
-
-	auto* window = glfwCreateWindow(800, 600, "Triangles", nullptr, nullptr);
-	glfwMakeContextCurrent(window);
-
-	glfwSetFramebufferSizeCallback(window, gl_callbacks::framebuffer_resize);
-	glfwSetCharCallback(window, gl_callbacks::swap_polygon_mode);
-	glfwSetKeyCallback(window, [](auto* window, int keycode, int, int, int) {
-		if (keycode == GLFW_KEY_ESCAPE) {
-			glfwSetWindowShouldClose(window, true);
-		}
-	});
-
-
-	using GLstate = GLstate<false>;
+	GLFWwrapper window;
 	glbinding::initialize(glfwGetProcAddress);
 
+	glfwSetFramebufferSizeCallback(*window, framebuffer_resize);
+	glfwSetCharCallback(*window, swap_polygon_mode);
+	glfwSetKeyCallback(*window, exit_app);
+
+	using GLstate = GLstate<false>;
 	Shader triangle{ "shaders/triangle.vs.glsl", "shaders/triangle.fs.glsl" };
 	GLstate::init();
 	GLstate state{ span{ geometry::vertices }, span{ geometry::indices } };
@@ -155,7 +144,6 @@ int main() {
 		SOIL_CREATE_NEW_ID,
 		SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB);
 
-
 	triangle.use();
 	triangle.setVec4("baseColor", geometry::blue);
 	triangle.setMat4("view", matrix::view);
@@ -163,7 +151,7 @@ int main() {
 	triangle.setInt("texture1", 0);
 	triangle.setInt("texture2", 1);
 
-	while (!glfwWindowShouldClose(window)) {
+	while (!glfwWindowShouldClose(*window)) {
 		GLstate::clear_screen();
 		gl::glActiveTexture(gl::GL_TEXTURE0);
 		gl::glBindTexture(gl::GLenum{ GL_TEXTURE_2D }, tex_container);
@@ -181,12 +169,9 @@ int main() {
 				glm::vec3{ .5f, 1.f, .0f });
 			triangle.setMat4("model", matrix::model);
 			state.draw();
-		}
+		};
 
-		glfwSwapBuffers(window);
+		glfwSwapBuffers(*window);
 		glfwPollEvents();
 	}
-
-	glfwDestroyWindow(window);
-	glfwTerminate();
 }

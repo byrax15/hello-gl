@@ -36,7 +36,7 @@ endif()
 
 # Add source to this project's executable.
 add_executable (hello-gl)
-target_sources(hello-gl PRIVATE "hello-gl.cpp" "Shader.h" "GLstate.h")
+target_sources(hello-gl PRIVATE "hello-gl.cpp" "Shader.h" "GLstate.h" "GLFWwrapper.h" )
 
 target_link_libraries(hello-gl PRIVATE glbinding::glbinding glfw glm::glm soil2)
 
